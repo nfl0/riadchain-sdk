@@ -41,11 +41,11 @@ it does not start a Riadchain network or broadcast transactions.
    tarball. Exclude credentials, private deployment data, test journals and
    monorepo-only artifacts.
 4. Publish the generated repository revision and an immutable stable version tag
-   matching the package, such as `v2.0.1`. Configure npm's OIDC trusted publisher
+   matching the package, such as `v2.0.2`. Configure npm's OIDC trusted publisher
    for the exact `nfl0/riadchain-sdk` repository and `publish.yml` workflow. In GitHub
    Actions, manually dispatch **Publish SDK**, selecting that tag under **Use
    workflow from**. From the CLI, the equivalent is
-   `gh workflow run publish.yml --repo nfl0/riadchain-sdk --ref v2.0.1`.
+   `gh workflow run publish.yml --repo nfl0/riadchain-sdk --ref v2.0.2`.
    The workflow rejects branch dispatches, pins checkout to the event's commit,
    and checks that the tag matches the package version and the source record is
    clean. It then performs a clean install and isolated-consumer verification

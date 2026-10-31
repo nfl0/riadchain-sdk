@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Require a release-tag dispatch
         run: |
-          node --input-type=module -e 'import assert from "node:assert/strict"; assert.equal(process.env.GITHUB_REF_TYPE,"tag","Run this workflow from the immutable release tag, not a branch."); assert.match(process.env.GITHUB_REF_NAME,/^v[0-9]+\.[0-9]+\.[0-9]+$/,"Choose a stable version tag such as v2.0.1.");'
+          node --input-type=module -e 'import assert from "node:assert/strict"; assert.equal(process.env.GITHUB_REF_TYPE,"tag","Run this workflow from the immutable release tag, not a branch."); assert.match(process.env.GITHUB_REF_NAME,/^v[0-9]+\.[0-9]+\.[0-9]+$/,"Choose a stable version tag such as v2.0.2.");'
       - uses: actions/checkout@v5
         with:
           ref: ${{ github.sha }}
@@ -66,6 +66,6 @@ jobs:
       # publishes its verified tarball without installing or executing it.
       - name: Publish the verified tarball
         run: |
-          set -- sdk-publish/*.tgz
+          set -- ./sdk-publish/*.tgz
           test "$#" -eq 1
           npm publish "$1" --ignore-scripts --access public
