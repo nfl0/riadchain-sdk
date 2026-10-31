@@ -1,6 +1,6 @@
 {
   "name": "@riadchain/sdk",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Typed clients, transaction tools and native FILE access for Riadchain application networks.",
   "type": "module",
   "license": "MIT",

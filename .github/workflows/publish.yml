@@ -2,11 +2,6 @@ name: Publish SDK
 
 on:
   workflow_dispatch:
-    inputs:
-      release_tag:
-        description: Existing immutable release tag, for example v2.0.0
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -21,18 +16,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Require a release-tag dispatch
+        run: |
+          node --input-type=module -e 'import assert from "node:assert/strict"; assert.equal(process.env.GITHUB_REF_TYPE,"tag","Run this workflow from the immutable release tag, not a branch."); assert.match(process.env.GITHUB_REF_NAME,/^v[0-9]+\.[0-9]+\.[0-9]+$/,"Choose a stable version tag such as v2.0.1.");'
       - uses: actions/checkout@v5
         with:
-          ref: ${{ inputs.release_tag }}
+          ref: ${{ github.sha }}
       - uses: actions/setup-node@v5
         with:
           node-version: '24'
           registry-url: https://registry.npmjs.org
       - name: Check immutable release source
-        env:
-          RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          node --input-type=module -e 'import fs from "node:fs"; import assert from "node:assert/strict"; const p=JSON.parse(fs.readFileSync("package.json")); const s=JSON.parse(fs.readFileSync("SOURCE.json")); assert.equal(process.env.RELEASE_TAG,"v"+p.version); assert.equal(s.dirty,false);'
+          node --input-type=module -e 'import fs from "node:fs"; import assert from "node:assert/strict"; const p=JSON.parse(fs.readFileSync("package.json")); const s=JSON.parse(fs.readFileSync("SOURCE.json")); assert.equal(process.env.GITHUB_REF_NAME,"v"+p.version); assert.equal(s.dirty,false);'
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run verify
       - name: Pack the verified artifact

@@ -40,13 +40,18 @@ it does not start a Riadchain network or broadcast transactions.
 3. Review the exported dependency closure, lockfile, license, source revision and
    tarball. Exclude credentials, private deployment data, test journals and
    monorepo-only artifacts.
-4. Publish the generated repository revision and an immutable version tag matching
-   the package, such as `v2.0.0`. Configure npm's OIDC trusted publisher for the
-   exact `nfl0/riadchain-sdk` repository and `publish.yml` workflow. In GitHub
-   Actions, manually dispatch **Publish SDK** with `release_tag` set to that tag.
-   The workflow checks the package version and clean source record, performs a
-   clean install and isolated-consumer verification, then publishes the public
-   package. Its OIDC identity replaces a long-lived npm publishing token.
+4. Publish the generated repository revision and an immutable stable version tag
+   matching the package, such as `v2.0.1`. Configure npm's OIDC trusted publisher
+   for the exact `nfl0/riadchain-sdk` repository and `publish.yml` workflow. In GitHub
+   Actions, manually dispatch **Publish SDK**, selecting that tag under **Use
+   workflow from**. From the CLI, the equivalent is
+   `gh workflow run publish.yml --repo nfl0/riadchain-sdk --ref v2.0.1`.
+   The workflow rejects branch dispatches, pins checkout to the event's commit,
+   and checks that the tag matches the package version and the source record is
+   clean. It then performs a clean install and isolated-consumer verification
+   before publishing. npm's provenance therefore identifies the same tag/commit
+   that produced the artifact. Its OIDC identity replaces a long-lived npm
+   publishing token.
 5. Verify the registry artifact and release metadata independently after
    publication. Keep release notes explicit about the node RPC and protocol
    behavior exercised by the release checks.
@@ -56,6 +61,19 @@ maintainer before the trusted-publisher relationship is established. Complete
 any required authentication privately, inspect the same verified package and
 publish with public access. Do not commit or copy npm/GitHub credentials into
 the generated repository or its workflows.
+
+For a first publication that needs phone-based approval, maintainers can stage
+the already verified tarball with
+`npm stage publish /absolute/path/to/qualified.tgz --ignore-scripts --access public`.
+Retain the returned stage ID, reconcile that original stage, and verify its
+downloaded bytes before approving it in npm's **Staged Packages** page. A new
+package has a public placeholder until its staged release is approved. Do not
+submit another publication for the same reserved version.
+
+A newly configured trusted publisher must complete its first successful publish
+within two days or npm expires it. Save the relationship when a real qualified
+release is ready, and verify the resulting registry provenance after publication.
+See [npm's current requirements](https://docs.npmjs.com/trusted-publishers/).
 
 When changing dependencies, update the lockfile in a fresh generated project
 with `npm install --package-lock-only --ignore-scripts`, then copy its
