@@ -1,0 +1,231 @@
+{
+  "name": "@riadchain/sdk",
+  "version": "2.0.0",
+  "description": "Typed clients, transaction tools and native FILE access for Riadchain application networks.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nfl0/riadchain-sdk.git"
+  },
+  "homepage": "https://github.com/nfl0/riadchain-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/nfl0/riadchain/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "main": "./dist/sdk/index.js",
+  "types": "./dist/sdk/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/sdk/index.d.ts",
+      "import": "./dist/sdk/index.js",
+      "default": "./dist/sdk/index.js"
+    },
+    "./appliance-setup": {
+      "types": "./dist/sdk/appliance-setup.d.ts",
+      "import": "./dist/sdk/appliance-setup.js",
+      "default": "./dist/sdk/appliance-setup.js"
+    },
+    "./cloud-handoff": {
+      "types": "./dist/sdk/cloud-handoff.d.ts",
+      "import": "./dist/sdk/cloud-handoff.js",
+      "default": "./dist/sdk/cloud-handoff.js"
+    },
+    "./cloud-core": {
+      "types": "./dist/sdk/cloud-core.d.ts",
+      "import": "./dist/sdk/cloud-core.js",
+      "default": "./dist/sdk/cloud-core.js"
+    },
+    "./gateway": {
+      "types": "./dist/sdk/gateway.d.ts",
+      "import": "./dist/sdk/gateway.js",
+      "default": "./dist/sdk/gateway.js"
+    },
+    "./browser": {
+      "types": "./dist/sdk/browser.d.ts",
+      "import": "./dist/sdk/browser.js",
+      "default": "./dist/sdk/browser.js"
+    },
+    "./node": {
+      "types": "./dist/sdk/node.d.ts",
+      "import": "./dist/sdk/node.js",
+      "default": "./dist/sdk/node.js"
+    },
+    "./provider": {
+      "types": "./dist/sdk/provider.d.ts",
+      "import": "./dist/sdk/provider.js",
+      "default": "./dist/sdk/provider.js"
+    },
+    "./signer": {
+      "types": "./dist/sdk/signer.d.ts",
+      "import": "./dist/sdk/signer.js",
+      "default": "./dist/sdk/signer.js"
+    },
+    "./wallet": {
+      "types": "./dist/sdk/wallet.d.ts",
+      "import": "./dist/sdk/wallet.js",
+      "default": "./dist/sdk/wallet.js"
+    },
+    "./household-identity": {
+      "types": "./dist/sdk/household-identity.d.ts",
+      "import": "./dist/sdk/household-identity.js",
+      "default": "./dist/sdk/household-identity.js"
+    },
+    "./names": {
+      "types": "./dist/sdk/names.d.ts",
+      "import": "./dist/sdk/names.js",
+      "default": "./dist/sdk/names.js"
+    },
+    "./guest-access": {
+      "types": "./dist/sdk/guest-access.d.ts",
+      "import": "./dist/sdk/guest-access.js",
+      "default": "./dist/sdk/guest-access.js"
+    },
+    "./household-approval": {
+      "types": "./dist/sdk/household-approval.d.ts",
+      "import": "./dist/sdk/household-approval.js",
+      "default": "./dist/sdk/household-approval.js"
+    },
+    "./household-treasury": {
+      "types": "./dist/sdk/household-treasury.d.ts",
+      "import": "./dist/sdk/household-treasury.js",
+      "default": "./dist/sdk/household-treasury.js"
+    },
+    "./recurring-payments": {
+      "types": "./dist/sdk/recurring-payments.d.ts",
+      "import": "./dist/sdk/recurring-payments.js",
+      "default": "./dist/sdk/recurring-payments.js"
+    },
+    "./state-condition-automation": {
+      "types": "./dist/sdk/state-condition-automation.d.ts",
+      "import": "./dist/sdk/state-condition-automation.js",
+      "default": "./dist/sdk/state-condition-automation.js"
+    },
+    "./household-escrow": {
+      "types": "./dist/sdk/household-escrow.d.ts",
+      "import": "./dist/sdk/household-escrow.js",
+      "default": "./dist/sdk/household-escrow.js"
+    },
+    "./package-registry": {
+      "types": "./dist/sdk/package-registry.d.ts",
+      "import": "./dist/sdk/package-registry.js",
+      "default": "./dist/sdk/package-registry.js"
+    },
+    "./encrypted-vault": {
+      "types": "./dist/sdk/encrypted-vault.d.ts",
+      "import": "./dist/sdk/encrypted-vault.js",
+      "default": "./dist/sdk/encrypted-vault.js"
+    },
+    "./vault-crypto": {
+      "types": "./dist/sdk/vault-crypto.d.ts",
+      "import": "./dist/sdk/vault-crypto.js",
+      "default": "./dist/sdk/vault-crypto.js"
+    },
+    "./vault-key-store": {
+      "types": "./dist/sdk/vault-key-store.d.ts",
+      "import": "./dist/sdk/vault-key-store.js",
+      "default": "./dist/sdk/vault-key-store.js"
+    },
+    "./types": {
+      "types": "./dist/sdk/types.d.ts",
+      "import": "./dist/sdk/types.js",
+      "default": "./dist/sdk/types.js"
+    },
+    "./workloads/transfers": {
+      "types": "./dist/sdk/workloads/transfers.d.ts",
+      "import": "./dist/sdk/workloads/transfers.js",
+      "default": "./dist/sdk/workloads/transfers.js"
+    },
+    "./workloads/contracts": {
+      "types": "./dist/sdk/workloads/contracts.d.ts",
+      "import": "./dist/sdk/workloads/contracts.js",
+      "default": "./dist/sdk/workloads/contracts.js"
+    },
+    "./workloads/files": {
+      "types": "./dist/sdk/workloads/files.d.ts",
+      "import": "./dist/sdk/workloads/files.js",
+      "default": "./dist/sdk/workloads/files.js"
+    },
+    "./internal/txUtils": {
+      "types": "./dist/sdk/internal/txUtils.d.ts",
+      "import": "./dist/sdk/internal/txUtils.js",
+      "default": "./dist/sdk/internal/txUtils.js"
+    },
+    "./internal/fileDescriptor": {
+      "types": "./dist/sdk/internal/fileDescriptor.d.ts",
+      "import": "./dist/sdk/internal/fileDescriptor.js",
+      "default": "./dist/sdk/internal/fileDescriptor.js"
+    },
+    "./internal/protocolParams": {
+      "types": "./dist/sdk/internal/protocolParams.d.ts",
+      "import": "./dist/sdk/internal/protocolParams.js",
+      "default": "./dist/sdk/internal/protocolParams.js"
+    },
+    "./internal/fileConstants": {
+      "types": "./dist/sdk/internal/fileConstants.d.ts",
+      "import": "./dist/sdk/internal/fileConstants.js",
+      "default": "./dist/sdk/internal/fileConstants.js"
+    },
+    "./internal/feeSchedule": {
+      "types": "./dist/sdk/internal/feeSchedule.d.ts",
+      "import": "./dist/sdk/internal/feeSchedule.js",
+      "default": "./dist/sdk/internal/feeSchedule.js"
+    },
+    "./internal/crypto": {
+      "types": "./dist/sdk/internal/crypto.d.ts",
+      "import": "./dist/sdk/internal/crypto.js",
+      "default": "./dist/sdk/internal/crypto.js"
+    },
+    "./internal/chatCrypto": {
+      "types": "./dist/sdk/internal/chatCrypto.d.ts",
+      "import": "./dist/sdk/internal/chatCrypto.js",
+      "default": "./dist/sdk/internal/chatCrypto.js"
+    },
+    "./internal/canonicalChainEncoding": {
+      "types": "./dist/sdk/internal/canonicalChainEncoding.d.ts",
+      "import": "./dist/sdk/internal/canonicalChainEncoding.js",
+      "default": "./dist/sdk/internal/canonicalChainEncoding.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "proto/riadchain.proto",
+    "SOURCE.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "verify": "npm run build && node scripts/verify-package.mjs",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.11.0",
+    "@connectrpc/connect": "^2.1.1",
+    "@connectrpc/connect-node": "^2.1.1",
+    "@connectrpc/connect-web": "^2.1.1",
+    "@noble/ciphers": "^2.2.0",
+    "@noble/hashes": "2.2.0",
+    "@noble/secp256k1": "^3.0.0",
+    "age-encryption": "0.3.1",
+    "cbor-x": "^1.6.4",
+    "ethereum-cryptography": "^3.2.0",
+    "interface-blockstore": "^6.0.1",
+    "ipfs-unixfs-exporter": "^15.0.4",
+    "ipfs-unixfs-importer": "^16.1.5",
+    "multiformats": "^13.4.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.37",
+    "esbuild": "0.28.1",
+    "typescript": "5.9.3"
+  }
+}

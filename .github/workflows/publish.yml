@@ -1,0 +1,75 @@
+name: Publish SDK
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing immutable release tag, for example v2.0.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sdk-npm-publication
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    if: github.repository == 'nfl0/riadchain-sdk'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.release_tag }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - name: Check immutable release source
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; import assert from "node:assert/strict"; const p=JSON.parse(fs.readFileSync("package.json")); const s=JSON.parse(fs.readFileSync("SOURCE.json")); assert.equal(process.env.RELEASE_TAG,"v"+p.version); assert.equal(s.dirty,false);'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run verify
+      - name: Pack the verified artifact
+        run: |
+          mkdir "$RUNNER_TEMP/sdk-publish"
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/sdk-publish"
+          cd "$RUNNER_TEMP/sdk-publish"
+          sha256sum ./*.tgz > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdk-npm-package
+          path: ${{ runner.temp }}/sdk-publish/
+
+  publish:
+    needs: qualify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdk-npm-package
+          path: sdk-publish
+      - name: Verify package digest
+        working-directory: sdk-publish
+        run: sha256sum -c SHA256SUMS
+      # Configure npm's trusted publisher for this exact repository/workflow.
+      # Build/dependency code runs only in the separate read-only job. This job
+      # publishes its verified tarball without installing or executing it.
+      - name: Publish the verified tarball
+        run: |
+          set -- sdk-publish/*.tgz
+          test "$#" -eq 1
+          npm publish "$1" --ignore-scripts --access public

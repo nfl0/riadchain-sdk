@@ -1,0 +1,1388 @@
+syntax = "proto3";
+
+package riadchain.v1;
+
+// Health checking for load balancers, orchestrators, and monitoring.
+service Health {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+}
+
+// Node process, runtime, metrics, and sync state.
+service NodeService {
+  rpc GetLocalStatus(EmptyRequest) returns (GetLocalStatusResponse);
+  rpc GetStatus(EmptyRequest) returns (GetStatusResponse);
+  rpc GetSyncHealth(EmptyRequest) returns (GetSyncHealthResponse);
+  rpc GetLocalSyncState(EmptyRequest) returns (GetLocalSyncStateResponse);
+  rpc GetOperatorHealth(EmptyRequest) returns (OperatorHealthResponse);
+  rpc GetVersion(EmptyRequest) returns (GetVersionResponse);
+  rpc GetProtocolParams(EmptyRequest) returns (ProtocolParamsResponse);
+  rpc GetProtocolInfo(EmptyRequest) returns (ProtocolInfo);
+  rpc GetMetrics(EmptyRequest) returns (NodeMetricsResponse);
+}
+
+// Human-oriented views derived from canonical transactions and receipts.
+service AuditService {
+  rpc ListHistory(ListAuditHistoryRequest) returns (ListAuditHistoryResponse);
+}
+
+// Chain data and inter-node block exchange.
+service ChainService {
+  rpc GetBlockHeaders(GetBlockHeadersRequest) returns (GetBlockHeadersResponse);
+  rpc GetBlockByHeight(GetBlockByHeightRequest) returns (Block);
+  rpc GetBlockByHash(GetBlockByHashRequest) returns (Block);
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+  rpc GetTransactionsByAddress(GetTransactionsByAddressRequest) returns (GetTransactionsByAddressResponse);
+  rpc GetBlockReceipts(GetBlockReceiptsRequest) returns (GetBlockReceiptsResponse);
+  rpc GetUtxos(GetUtxosRequest) returns (GetUtxosResponse);
+
+  // P2P-only methods.
+  rpc GetTip(EmptyRequest) returns (GetTipResponse);
+  rpc GetGenesis(EmptyRequest) returns (GetGenesisResponse);
+  rpc GetBlocksAfter(GetBlocksAfterRequest) returns (GetBlocksAfterResponse);
+  rpc SubmitBlock(SubmitBlockRequest) returns (SubmitBlockResponse);
+}
+
+// Transaction submission, mempool reads, receipts, and simulation.
+service TxService {
+  rpc GetPending(EmptyRequest) returns (TransactionList);
+  rpc GetPendingIds(EmptyRequest) returns (TxIdsResponse);
+  rpc GetPendingByIds(GetPendingByIdsRequest) returns (TransactionList);
+  rpc GetById(GetTxByIdRequest) returns (TransactionContext);
+  rpc GetReceipt(GetReceiptRequest) returns (TransactionReceipt);
+  rpc Send(SendTxRequest) returns (SendTxResponse);
+  rpc SendBatch(SendTxBatchRequest) returns (SendTxBatchResponse);
+  rpc Simulate(SimulateRequest) returns (SimulateResponse);
+}
+
+// Contract state, events, deploy preview, and read-only view calls.
+service ContractService {
+  // Short-lived immutable native reads; all session operations require RPC auth.
+  rpc OpenReadSession(OpenReadSessionRequest) returns (OpenReadSessionResponse);
+  rpc CloseReadSession(CloseReadSessionRequest) returns (CloseReadSessionResponse);
+  rpc GetState(GetContractStateRequest) returns (GetContractStateResponse);
+  rpc GetEvents(GetContractEventsRequest) returns (GetContractEventsResponse);
+  rpc PreviewDeploy(PreviewDeployRequest) returns (PreviewDeployResponse);
+  rpc CallView(CallViewRequest) returns (CallViewResponse);
+  rpc ListScheduledCalls(ListScheduledCallsRequest) returns (ListScheduledCallsResponse);
+  rpc GetScheduledCall(GetScheduledCallRequest) returns (ScheduledCall);
+}
+
+// Consensus-native delegated device and guest authority.
+service AccountService {
+  rpc ListCapabilities(ListCapabilitiesRequest) returns (ListCapabilitiesResponse);
+  rpc GetCapability(GetCapabilityRequest) returns (DeviceCapability);
+  rpc GetProductionSigner(GetProductionSignerRequest) returns (GetProductionSignerResponse);
+}
+
+// Typed aggregate queries used by the explorer; ordinary REST queries are not served.
+service ExplorerService {
+  rpc GetStats(EmptyRequest) returns (ExplorerStatsResponse);
+  rpc ListBlocks(ExplorerPageRequest) returns (ExplorerBlocksResponse);
+  rpc GetBlock(ExplorerBlockRequest) returns (Block);
+  rpc GetBlockReceipts(ExplorerBlockRequest) returns (ExplorerBlockReceiptsResponse);
+  rpc ListTransactions(ExplorerPageRequest) returns (ExplorerTransactionsResponse);
+  rpc GetAddress(ExplorerAddressRequest) returns (ExplorerAddressResponse);
+  rpc ListAddressTransactions(ExplorerAddressPageRequest) returns (ExplorerAddressTransactionsResponse);
+  rpc ListAddressTokens(ExplorerAddressPageRequest) returns (ExplorerAddressTokensResponse);
+  rpc Search(ExplorerSearchRequest) returns (ExplorerSearchResponse);
+  rpc ListFiles(ExplorerPageRequest) returns (ExplorerFilesResponse);
+  rpc GetFile(ExplorerFileRequest) returns (ExplorerFileResponse);
+  rpc GetCharts(ExplorerChartsRequest) returns (ExplorerChartsResponse);
+}
+
+// Token registry reads.
+service TokenService {
+  rpc GetBalance(GetTokenBalanceRequest) returns (GetTokenBalanceResponse);
+  rpc GetSupply(GetTokenSupplyRequest) returns (GetTokenSupplyResponse);
+  rpc GetMetadata(GetTokenMetadataRequest) returns (GetTokenMetadataResponse);
+}
+
+// File storage, upload, provenance, and P2P staged-file inventory.
+service FileService {
+  rpc PrepareFileIntent(PrepareFileIntentRequest) returns (PrepareFileIntentResponse);
+  rpc DescribeFile(DescribeFileRequest) returns (DescribeFileResponse);
+  rpc StageFile(StageFileRequest) returns (StageFileResponse);
+  rpc GetUploadStatus(GetUploadStatusRequest) returns (GetUploadStatusResponse);
+
+  rpc Stat(StatFileRequest) returns (StatFileResponse);
+  rpc HasContent(HasContentRequest) returns (HasContentResponse);
+  rpc GetByCid(GetByCidRequest) returns (GetByCidResponse);
+  rpc GetPendingStatus(GetPendingFileStatusRequest) returns (GetPendingFileStatusResponse);
+  rpc GetProvenance(GetFileProvenanceRequest) returns (FileReferenceLookupResponse);
+  rpc ListByAddress(ListFilesByAddressRequest) returns (FileReferenceLookupResponse);
+  rpc CatText(CatTextRequest) returns (CatTextResponse);
+  // Authenticated, bounded reads of confirmed native FILE archive bytes.
+  rpc ReadContentChunk(ReadContentChunkRequest) returns (ReadContentChunkResponse);
+
+  // P2P-only methods.
+  rpc GetPendingStagedIds(EmptyRequest) returns (TxIdsResponse);
+  rpc AckPendingStaged(AckPendingStagedRequest) returns (AckPendingStagedResponse);
+  rpc GetPendingStagedFile(GetPendingStagedFileRequest) returns (stream FileChunk);
+}
+
+// File/block storage diagnostics and P2P raw-block hydration.
+service StorageService {
+  rpc GetMetrics(EmptyRequest) returns (FileStorageMetricsResponse);
+  rpc GetBlockBase64(GetBlockBase64Request) returns (GetBlockBase64Response);
+  rpc VerifyIntegrity(EmptyRequest) returns (VerifyIntegrityResponse);
+  rpc GetPersistence(EmptyRequest) returns (PersistenceStatusResponse);
+}
+
+message EmptyRequest {}
+
+message StoragePackMetrics {
+  uint64 total = 1;
+  uint64 active = 2;
+  uint64 sealed = 3;
+  uint64 compacting = 4;
+  uint64 obsolete = 5;
+}
+
+message StorageBlockMetrics {
+  uint64 total = 1;
+  uint64 referenced = 2;
+  uint64 reclaimable = 3;
+}
+
+message StorageByteMetrics {
+  uint64 total = 1;
+  uint64 live = 2;
+  uint64 reclaimable = 3;
+}
+
+message FileStorageMetricsResponse {
+  StoragePackMetrics packs = 1;
+  StorageBlockMetrics blocks = 2;
+  StorageByteMetrics bytes = 3;
+  uint64 file_objects = 4;
+  uint64 staged_objects = 5;
+  uint64 missing_files = 6;
+  uint64 file_reference_count = 7;
+  // Bytes retained in staged upload objects, separate from canonical FILE bytes.
+  uint64 staged_bytes = 8;
+}
+
+message FileSyncHealthMetrics {
+  uint64 file_count = 1;
+  uint64 available_file_count = 2;
+  uint64 missing_file_count = 3;
+  uint64 available_bytes = 4;
+  uint64 missing_bytes = 5;
+  uint64 file_reference_count = 6;
+  uint64 hydration_queue_depth = 7;
+  bool archival_degraded = 9;
+}
+
+message ProcessMemoryMetrics {
+  uint64 rss = 1;
+  reserved 2 to 5;
+}
+
+message ProcessMetrics {
+  int32 pid = 1;
+  uint64 uptime_seconds = 2;
+  ProcessMemoryMetrics memory = 3;
+  reserved 4;
+}
+
+message NodeCounterMetrics {
+  reserved 1;
+  uint64 blocks_accepted = 2;
+  reserved 3 to 7;
+}
+
+message NodeMetricsChain {
+  optional BlockHeader latest_block = 1;
+  uint64 pending_transactions = 2;
+}
+
+message NodeMetricsStorage {
+  FileSyncHealthMetrics file_sync = 1;
+}
+
+message NodeMetricsResponse {
+  uint64 started_at = 1;
+  uint64 uptime_ms = 2;
+  ProcessMetrics process = 3;
+  NodeCounterMetrics counters = 4;
+  reserved 5 to 7;
+  NodeMetricsChain chain = 8;
+  NodeMetricsStorage storage = 9;
+}
+
+message HealthCheckRequest {
+  string service = 1;
+}
+
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+  }
+  ServingStatus status = 1;
+}
+
+message DaemonInfo {
+  string daemon_name = 1;
+  string daemon_version = 2;
+  string package_name = 3;
+}
+
+message NodeArchivalStatus {
+  uint64 file_count = 1;
+  uint64 available_file_count = 2;
+  uint64 missing_file_count = 3;
+  uint64 file_reference_count = 4;
+  uint64 hydration_queue_depth = 5;
+  bool archival_degraded = 6;
+  uint64 staged_file_count = 7;
+}
+
+message BlockProductionStatus {
+  bool can_produce_now = 1;
+  string role = 2;
+  string summary = 3;
+}
+
+message ProtocolActivation {
+  uint32 target_protocol_version = 1;
+  uint64 activation_height = 2;
+}
+
+message ProtocolInfo {
+  uint32 active_protocol_version = 1;
+  repeated uint32 supported_protocol_versions = 2;
+  uint32 next_block_protocol_version = 3;
+  // Whether this daemon implements the next block's required consensus rules.
+  bool compatible = 4;
+  // Local operator-agreed schedule; bounded to 64 entries and not changed by transactions.
+  repeated ProtocolActivation activations = 5;
+}
+
+message GetLocalStatusResponse {
+  DaemonInfo daemon = 1;
+  string local_address = 2;
+  string chain_id = 3;
+  bool is_validator = 4;
+  bool has_local_stake = 5;
+  int32 peer_count = 6;
+  NodeArchivalStatus archival = 7;
+  reserved 8, 9;
+  BlockProductionStatus block_production = 10;
+  ProtocolInfo protocol_info = 11;
+  // Funded account whose production authority this machine exercises.
+  string production_owner = 12;
+  // Whether the local signing key is the owner or its currently authorized signer.
+  bool production_signer_authorized = 13;
+}
+
+message GetStatusResponse {
+  GetLocalStatusResponse local = 1;
+  int64 latest_block_index = 2;
+  optional string latest_block_hash = 3;
+  bool is_mining = 4;
+  int64 block_interval_ms = 5;
+  optional int64 next_block_at = 6;
+  optional int64 ms_until_next_block = 7;
+  int64 pending_transactions = 8;
+  optional string current_validator = 9;
+  int64 succession_timeout_ms = 10;
+  bool recoverable = 11;
+  repeated string peers = 12;
+  bool ready = 13;
+  string state_hash = 14;
+  bool local_tip_fresh = 15;
+  bool clock_sane = 16;
+  optional string storage_fault = 17;
+  bool fork_alarm = 18;
+}
+
+message SyncPeerSnapshot {
+  string peer = 1;
+  bool reachable = 2;
+  optional int64 height = 3;
+  optional string error = 4;
+  optional uint64 last_success_ms = 5;
+  optional uint64 last_error_ms = 6;
+  optional bool caught_up_hint = 7;
+  uint32 consecutive_failures = 8;
+}
+
+message GetSyncHealthResponse {
+  int64 local_height = 1;
+  optional string local_hash = 2;
+  int32 peer_count = 3;
+  int32 reachable_peer_count = 4;
+  int64 best_peer_height = 5;
+  int64 lag = 6;
+  bool syncing = 7;
+  LocalSyncStateArchival archival = 8;
+  repeated SyncPeerSnapshot peers = 9;
+  bool caught_up = 10;
+  bool peer_comparison_available = 11;
+  LocalTipHealth local_tip = 12;
+  bool fork_alarm = 13;
+}
+
+message LocalTipHealth {
+  uint64 now_ms = 1;
+  uint64 tip_timestamp_ms = 2;
+  uint64 tip_observed_at_ms = 3;
+  uint64 tip_age_ms = 4;
+  uint64 freshness_window_ms = 5;
+  bool clock_sane = 6;
+  bool tip_fresh = 7;
+  bool fork_alarm = 8;
+  bool ready = 9;
+}
+
+message LocalSyncStateArchival {
+  uint64 missing_file_count = 1;
+  uint64 hydration_queue_depth = 2;
+  bool archival_degraded = 3;
+}
+
+message GetLocalSyncStateResponse {
+  int64 local_height = 1;
+  optional string local_hash = 2;
+  LocalSyncStateArchival archival = 3;
+}
+
+message OperatorCanonicalStorageHealth {
+  bool healthy = 1;
+  uint64 stored_blocks = 2;
+  uint64 canonical_log_bytes = 3;
+  uint64 tip_height = 4;
+  string tip_hash = 5;
+  string state_hash = 6;
+}
+
+message OperatorDerivedStorageHealth {
+  uint64 stored_receipts = 1;
+  bool receipt_cache_healthy = 2;
+  uint64 derived_block_receipts = 3;
+  uint64 checkpoint_count = 4;
+  optional uint64 latest_checkpoint_height = 5;
+  optional uint64 loaded_checkpoint_height = 6;
+  bool checkpoint_healthy = 7;
+}
+
+message OperatorFileArchiveHealth {
+  uint64 stored_objects = 1;
+  uint64 stored_bytes = 2;
+  uint64 committed_files = 3;
+  uint64 available_files = 4;
+  uint64 missing_files = 5;
+  uint64 available_bytes = 6;
+  uint64 missing_bytes = 7;
+  uint64 file_references = 8;
+  uint64 hydration_queue_depth = 9;
+  bool degraded = 10;
+}
+
+message OperatorHealthResponse {
+  uint64 observed_at_unix_ms = 1;
+  GetStatusResponse status = 2;
+  GetSyncHealthResponse sync = 3;
+  bool ready = 4;
+  bool local_tip_fresh = 5;
+  bool clock_sane = 6;
+  bool fork_alarm = 7;
+  uint64 equivocation_evidence_count = 8;
+  OperatorCanonicalStorageHealth canonical_storage = 9;
+  OperatorDerivedStorageHealth derived_storage = 10;
+  OperatorFileArchiveHealth file_archive = 11;
+  bool persistent = 12;
+}
+
+message ListAuditHistoryRequest {
+  string cursor = 1;
+  uint32 limit = 2;
+  optional string identity_registry_address = 3;
+}
+
+message AuditEventSummary {
+  string contract_address = 1;
+  string name = 2;
+}
+
+message AuditHistoryEntry {
+  string cursor = 1;
+  uint64 block_index = 2;
+  uint32 item_index = 3;
+  optional uint32 tx_index = 4;
+  string transaction_id = 5;
+  bool canonical_transaction = 6;
+  uint64 timestamp_ms = 7;
+  string kind = 8;
+  string summary = 9;
+  optional string actor = 10;
+  optional string actor_label = 11;
+  optional string target = 12;
+  optional string target_label = 13;
+  optional string amount_satoshis = 14;
+  string status = 15;
+  optional string contract_address = 16;
+  optional string method = 17;
+  optional string file_cid = 18;
+  repeated AuditEventSummary events = 19;
+  optional string schedule_id = 20;
+}
+
+message ListAuditHistoryResponse {
+  repeated AuditHistoryEntry entries = 1;
+  optional string next_cursor = 2;
+  bool has_more = 3;
+  bool canonical_complete = 4;
+}
+
+message FeeAccounting {
+  string reserved_value = 1;
+  string raw_reserved_amount = 2;
+  string reserved_fee_budget = 3;
+  string max_required_fee = 4;
+  string actual_required_fee = 5;
+  string actual_fee_charged = 6;
+  string gas_used = 7;
+  string gas_refund = 8;
+}
+
+message SimulationEvent {
+  string contract_address = 1;
+  string tx_id = 2;
+  string event_name = 3;
+  bytes data_json = 4;
+  int64 block_index = 5;
+  int64 timestamp = 6;
+  int32 tx_index = 7;
+  int32 event_index = 8;
+}
+
+message SimulateResponse {
+  FeeAccounting fee = 1;
+  repeated SimulationEvent events = 2;
+  string execution_status = 3;
+  optional string execution_error = 4;
+}
+
+message SendTxResponse {
+  string message = 1;
+  Transaction tx = 2;
+}
+
+message TxBatchRejection {
+  optional string tx_id = 1;
+  string error = 2;
+  optional string code = 3;
+}
+
+message SendTxBatchResponse {
+  repeated TxBatchRejection rejected = 1;
+  int32 accepted_count = 2;
+  int32 rejected_count = 3;
+}
+
+message TransactionList {
+  repeated Transaction transactions = 1;
+}
+
+message TransactionContext {
+  Transaction transaction = 1;
+  optional int64 block_index = 2;
+  optional string block_hash = 3;
+  string status = 4;
+}
+
+message TxReceiptEvent {
+  string contract_address = 1;
+  string tx_id = 2;
+  string event_name = 3;
+  bytes data_json = 4;
+  int64 block_index = 5;
+  int64 timestamp = 6;
+}
+
+message TransactionReceipt {
+  string tx_id = 1;
+  int64 block_index = 2;
+  optional string block_hash = 3;
+  bool success = 4;
+  string execution_status = 5;
+  string gas_used = 6;
+  string fee_charged = 7;
+  int32 event_count = 8;
+  string gas_refund = 9;
+  optional string error = 10;
+  repeated TxReceiptEvent events = 11;
+  repeated ContractCallTrace call_tree = 12;
+}
+
+message ContractCallTrace {
+  uint32 call_index = 1;
+  int32 parent_call_index = 2;
+  uint32 depth = 3;
+  string caller = 4;
+  string callee = 5;
+  string method = 6;
+  string value_satoshis = 7;
+  bool succeeded = 8;
+  optional string error = 9;
+  string gas_used = 10;
+}
+
+message BlockReceipt {
+  string tx_id = 1;
+  int64 block_index = 2;
+  bool success = 3;
+  string execution_status = 4;
+  string gas_used = 5;
+  string fee_charged = 6;
+  int32 event_count = 7;
+  optional string error = 8;
+  string gas_refund = 9;
+}
+
+message GetBlockReceiptsResponse {
+  int64 block_index = 1;
+  repeated BlockReceipt receipts = 2;
+}
+
+message AddressTransactionEntry {
+  Transaction transaction = 1;
+  optional int64 block_index = 2;
+  optional string block_hash = 3;
+  string status = 4;
+  string involvement = 5;
+}
+
+message GetTransactionsByAddressResponse {
+  string address = 1;
+  repeated AddressTransactionEntry transactions = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+  int32 total = 5;
+  bool has_more = 6;
+}
+
+message SuccessionProof {
+  string tx_id = 1;
+  uint32 output_index = 2;
+  string amount = 3;
+}
+
+message FileAvailability {
+  string tx_id = 1;
+  string cid = 2;
+  uint64 size = 3;
+}
+
+message Block {
+  int64 index = 1;
+  string chain_id = 2;
+  int64 timestamp = 3;
+  repeated Transaction transactions = 4;
+  repeated FileAvailability file_availability = 5;
+  string previous_hash = 6;
+  string state_hash = 7;
+  string hash = 8;
+  optional string validator_public_key = 9;
+  string validator_address = 10;
+  string validator_signature = 11;
+  bool is_succession = 12;
+  optional SuccessionProof succession_proof = 13;
+  uint32 protocol_version = 14;
+}
+
+message BlockHeader {
+  int64 index = 1;
+  string chain_id = 2;
+  string hash = 3;
+  string previous_hash = 4;
+  string state_hash = 5;
+  int64 timestamp = 6;
+  string validator_address = 7;
+  optional string validator_public_key = 8;
+  int32 tx_count = 9;
+  bool is_succession = 10;
+  uint32 protocol_version = 11;
+}
+
+message GetBlockHeadersResponse {
+  repeated BlockHeader headers = 1;
+}
+
+message GetVersionResponse {
+  string daemon_name = 1;
+  string daemon_version = 2;
+  string package_name = 3;
+}
+
+message GetBlockHeadersRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string order = 3;
+}
+
+message GetBlockByHeightRequest {
+  int64 height = 1;
+}
+
+message GetBlockByHashRequest {
+  string hash = 1;
+}
+
+message GetBalanceRequest {
+  string address = 1;
+}
+
+message GetBalanceResponse {
+  string address = 1;
+  // Spendable native value represented by active UTXOs.
+  string balance = 2;
+  // Subsidy and fee rewards committed in the native vault but not yet claimed.
+  string reward_balance = 3;
+}
+
+message GetTransactionsByAddressRequest {
+  string address = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetBlockReceiptsRequest {
+  int64 height = 1;
+}
+
+message GetUtxosRequest {
+  string address = 1;
+  string page_token = 2;
+  int32 page_size = 3;
+}
+
+message Utxo {
+  string tx_id = 1;
+  uint32 output_index = 2;
+  string amount = 3;
+  string address = 4;
+  uint64 created_at_height = 5;
+}
+
+message GetUtxosResponse {
+  repeated Utxo utxos = 1;
+  string next_page_token = 2;
+}
+
+message GetBlocksAfterRequest {
+  int64 height = 1;
+  int32 limit = 2;
+}
+
+message SubmitBlockRequest {
+  Block block = 1;
+}
+
+message SubmitBlockResponse {
+  bool accepted = 1;
+  int64 index = 2;
+  string hash = 3;
+}
+
+message GetPendingByIdsRequest {
+  repeated string tx_ids = 1;
+}
+
+message GetTxByIdRequest {
+  string tx_id = 1;
+}
+
+message GetReceiptRequest {
+  string tx_id = 1;
+}
+
+message SimulateRequest {
+  Transaction tx = 1;
+  bool include_events = 2;
+}
+
+message TxIdsResponse {
+  repeated string tx_ids = 1;
+}
+
+// Transaction types supported by Riadchain.
+message Transaction {
+  enum Type {
+    FILE = 0;
+    CONTRACT = 1;
+    TRANSFER = 2;
+    COINBASE = 3;
+    reserved 4;
+    reserved "GOVERNANCE";
+  }
+
+  string id = 1;
+  string chain_id = 2;
+  Type type = 3;
+  repeated TxInput inputs = 4;
+  repeated TxOutput outputs = 5;
+  bytes payload_json = 6;
+  int64 timestamp = 7;
+  optional int64 expiry_height = 8;
+  optional int64 gas_limit = 9;
+}
+
+message TxInput {
+  string tx_id = 1;
+  uint32 output_index = 2;
+  string address = 3;
+  string signature = 4;
+}
+
+message TxOutput {
+  string address = 1;
+  string amount_satoshis = 2;
+}
+
+message SendTxRequest {
+  Transaction tx = 1;
+}
+
+message SendTxBatchRequest {
+  repeated Transaction txs = 1;
+}
+
+message ProtocolParamsResponse {
+  message FeeSchedule {
+    string base_fee_satoshis = 1;
+    string byte_rate_satoshis = 2;
+    string gas_rate_satoshis = 3;
+    string gas_units_per_satoshi = 4;
+    string storage_rate_satoshis = 5;
+  }
+  message GasSchedule {
+    string max_gas_per_tx = 1;
+    string block_gas_limit = 2;
+  }
+  message VmLimits {
+    int32 max_stack_depth = 1;
+    int32 max_return_stack_depth = 2;
+    int32 max_memory_cells = 3;
+    int32 max_instructions = 4;
+    int32 max_string_chars = 5;
+    int32 max_array_length = 6;
+    int32 max_big_int_bits = 7;
+    int32 max_pow_exponent = 8;
+  }
+  // Fixed by authenticated network mode: private 10,000ms, regtest 100ms.
+  int32 block_interval_ms = 1;
+  string block_subsidy_satoshis = 2;
+  string min_stake_satoshis = 3;
+  int32 succession_timeout_ms = 4;
+  int32 max_tx_bytes = 5;
+  int32 max_file_bytes = 6;
+  int32 max_block_bytes = 7;
+  int32 max_transactions_per_block = 8;
+  int32 max_outputs_per_transaction = 9;
+  int32 mempool_max_age_ms = 10;
+  FeeSchedule fee_schedule = 11;
+  GasSchedule gas_schedule = 12;
+  VmLimits vm_limits = 13;
+  int32 file_min_peer_acks_for_mining = 15;
+  int32 file_peer_ack_ttl_ms = 16;
+  reserved 14, 17;
+  // Genesis-authenticated mode: private or regtest; immutable after bootstrap.
+  string network_mode = 18;
+}
+
+message GetContractStateRequest {
+  string address = 1;
+  string storage_cursor = 2;
+  int32 storage_limit = 3;
+  optional string read_session_id = 4;
+}
+
+// Observed canonical state, not a portable state proof or finality assertion.
+message ReadAnchor {
+  string chain_id = 1;
+  string genesis_hash = 2;
+  uint64 block_index = 3;
+  string block_hash = 4;
+  string state_hash = 5;
+  uint32 protocol_version = 6;
+  uint64 timestamp_ms = 7;
+}
+
+message OpenReadSessionRequest {
+  // If present, opening fails unless this is the current canonical tip.
+  optional string expected_block_hash = 1;
+}
+message OpenReadSessionResponse {
+  string id = 1;
+  ReadAnchor anchor = 2;
+  uint64 expires_at_unix_ms = 3;
+}
+message CloseReadSessionRequest { string id = 1; }
+message CloseReadSessionResponse { bool closed = 1; }
+
+message GetContractEventsRequest {
+  string contract_address = 1;
+  string event_name = 2;
+  string tx_id = 3;
+  optional int64 from_block = 4;
+  optional int64 to_block = 5;
+  int32 limit = 6;
+  int32 offset = 7;
+  string order = 8;
+}
+
+message PeerBlockSummary {
+  int64 index = 1;
+  string chain_id = 2;
+  int64 timestamp = 3;
+  string hash = 4;
+  string previous_hash = 5;
+  int32 tx_count = 6;
+  optional string validator_public_key = 7;
+  string validator_address = 8;
+  bool is_succession = 9;
+  uint32 protocol_version = 11;
+}
+
+message GetTipResponse {
+  optional PeerBlockSummary latest_block = 1;
+}
+
+message GetGenesisResponse {
+  GenesisConfig config = 1;
+  int64 chain_length = 2;
+  bool is_active = 3;
+  optional PeerBlockSummary latest_block = 4;
+}
+
+message GenesisConfig {
+  string chain_id = 1;
+  string initial_validator = 2;
+  ProtocolParamsResponse protocol_params = 4;
+  repeated TxOutput allocations = 5;
+  uint64 timestamp_ms = 6;
+  // Owner account to limited operational block signer; owners retain direct authority.
+  map<string, string> production_signers = 7;
+}
+
+message GetProductionSignerRequest { string owner_address = 1; }
+message GetProductionSignerResponse {
+  string owner_address = 1;
+  // Absent means the owner has not authorized an additional production signer.
+  optional string signer_address = 2;
+}
+
+message GetBlocksAfterResponse {
+  repeated Block blocks = 1;
+}
+
+message ContractInfo {
+  string address = 1;
+  string code = 2;
+  optional string deployed_tx_id = 3;
+  optional string upgrade_authority = 4;
+}
+
+message ContractStorageEntry {
+  string slot = 1;
+  // dynamic ContractValue payload, JSON-encoded; empty bytes => null
+  bytes value_json = 2;
+}
+
+message GetContractStateResponse {
+  optional ContractInfo contract = 1;
+  string balance = 2;
+  repeated ContractStorageEntry storage = 3;
+  optional string storage_cursor = 4;
+  bool storage_has_more = 5;
+  optional string next_storage_cursor = 6;
+  optional ReadAnchor read_anchor = 7;
+}
+
+message ContractIndexedEvent {
+  string contract_address = 1;
+  string tx_id = 2;
+  string event_name = 3;
+  bytes data_json = 4;
+  int64 block_index = 5;
+  optional string block_hash = 6;
+  int64 timestamp = 7;
+  int32 tx_index = 8;
+  int32 event_index = 9;
+}
+
+message GetContractEventsResponse {
+  repeated ContractIndexedEvent events = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  int32 total = 4;
+  bool has_more = 5;
+}
+
+message ContractViewEvent {
+  string contract_address = 1;
+  string tx_id = 2;
+  string name = 3;
+  bytes data_json = 4;
+  int64 timestamp = 5;
+}
+
+message CallViewResponse {
+  bytes return_value_json = 1;
+  repeated ContractViewEvent events = 2;
+  optional ReadAnchor read_anchor = 3;
+}
+
+message GetBlockBase64Response {
+  string cid = 1;
+  optional string content_base64 = 2;
+}
+
+message VerifyIntegrityResponse {
+  bool ok = 1;
+  repeated string errors = 2;
+  uint64 checked_blocks = 3;
+  uint32 error_count = 4;
+  repeated string error_samples = 5;
+}
+
+message GetUploadStatusResponse {
+  string tx_id = 1;
+  string cid = 2;
+  uint64 expected_size = 3;
+  uint64 uploaded_bytes = 4;
+  bool file_staged = 5;
+  bool complete = 6;
+}
+
+message HasContentResponse {
+  string cid = 1;
+  bool present = 2;
+}
+
+message GetPendingFileStatusResponse {
+  string tx_id = 1;
+  string cid = 2;
+  uint64 expected_size = 3;
+  bool canonical_available = 4;
+  bool staged_locally = 5;
+  int32 peer_ack_count = 6;
+  int32 min_peer_acks_required = 7;
+  bool requires_peer_ack = 8;
+  bool mineable = 9;
+}
+
+message CatTextResponse {
+  string cid = 1;
+  optional string content = 2;
+}
+
+message ReadContentChunkRequest {
+  string cid = 1;
+  uint64 offset = 2;
+  // Must be between 1 and 65536. The last chunk may be shorter.
+  uint32 length = 3;
+}
+
+message ReadContentChunkResponse {
+  string cid = 1;
+  uint64 total_size = 2;
+  uint64 offset = 3;
+  bytes content = 4;
+}
+
+message PreviewDeployResponse {
+  string contract_address = 1;
+  string deployer_address = 2;
+  string salt = 3;
+  string code = 4;
+}
+
+message PreviewDeployRequest {
+  string code = 1;
+  string deployer_address = 2;
+  string salt = 3;
+}
+
+message CallViewRequest {
+  string contract_address = 1;
+  string method = 2;
+  bytes args_json = 3;
+  optional string read_session_id = 4;
+}
+
+message GetTokenBalanceRequest {
+  string token_id = 1;
+  string owner = 2;
+}
+
+message GetTokenSupplyRequest {
+  string token_id = 1;
+}
+
+message GetTokenMetadataRequest {
+  string token_id = 1;
+}
+
+message GetTokenBalanceResponse {
+  string token_id = 1;
+  string owner = 2;
+  string balance = 3;
+}
+
+message GetTokenSupplyResponse {
+  string token_id = 1;
+  string supply = 2;
+}
+
+message GetTokenMetadataResponse {
+  string token_id = 1;
+  string name = 2;
+  string symbol = 3;
+  string type = 4;
+  string creator = 5;
+  string supply = 6;
+  string max_supply = 7;
+  optional string uri = 8;
+}
+
+// Canonical FILE transaction payload.
+message FilePayload {
+  string cid = 1;
+  uint64 size = 2;
+  string storage = 3;
+  string filename = 4;
+  string mime_type = 5;
+}
+
+message PrepareFileIntentRequest {
+  string sender_address = 1;
+  FilePayload file = 2;
+  optional int64 expiry_height = 3;
+}
+
+message PrepareFileIntentResponse {
+  oneof result {
+    Transaction tx = 1;
+    string error = 2;
+  }
+}
+
+message DescribeFileRequest {
+  bytes content = 1;
+}
+
+message DescribeFileResponse {
+  string cid = 1;
+  uint64 size = 2;
+  uint64 blocks = 3;
+}
+
+// Append at most 1 MiB to the original FILE transaction. Repeating an exact
+// already-uploaded range is idempotent; conflicting bytes or gaps are rejected.
+message StageFileRequest {
+  string tx_id = 1;
+  bytes content = 2;
+  uint64 offset = 3;
+}
+
+message StageFileResponse {
+  string tx_id = 1;
+  string cid = 2;
+  uint64 size = 3;
+  string status = 4;
+  uint64 uploaded_bytes = 5;
+  bool complete = 6;
+}
+
+message GetUploadStatusRequest {
+  string tx_id = 1;
+}
+
+message StatFileRequest {
+  string cid = 1;
+}
+
+message StatFileResponse {
+  string cid = 1;
+  message FileStats {
+    string type = 1;
+    string size = 2;
+    optional int32 mode = 3;
+    optional uint64 mtime = 4;
+  }
+  FileStats stats = 2;
+}
+
+message HasContentRequest {
+  string cid = 1;
+}
+
+message GetByCidRequest {
+  string cid = 1;
+}
+
+message GetByCidResponse {
+  message FileInfo {
+    string cid = 1;
+    uint64 size = 2;
+    string first_seen_tx_id = 3;
+    int32 first_seen_block_index = 4;
+    optional string first_seen_by = 5;
+    optional string first_filename = 6;
+    optional string latest_filename = 7;
+    optional string mime_type = 8;
+    int32 reference_count = 9;
+    string content_status = 10;
+    optional uint64 last_hydration_attempt_at = 11;
+    optional uint64 last_hydration_success_at = 12;
+    string hydration_priority = 13;
+    int32 hydration_failure_count = 14;
+    optional uint64 next_hydration_attempt_at = 15;
+    optional string attested_by = 16;
+    optional int32 attested_at_block_index = 17;
+    optional string attested_source_peer = 18;
+    optional uint64 verified_at_accept_time = 19;
+    optional string last_hydration_source = 20;
+  }
+  optional FileInfo file = 1;
+}
+
+message GetPendingFileStatusRequest {
+  string tx_id = 1;
+}
+
+message GetFileProvenanceRequest {
+  string cid = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListFilesByAddressRequest {
+  string address = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message FileReferenceLookupResponse {
+  message FileReference {
+    string cid = 1;
+    string tx_id = 2;
+    optional string address = 3;
+    int32 block_index = 4;
+    uint64 timestamp = 5;
+    optional string filename = 6;
+    optional string mime_type = 7;
+    uint64 size = 8;
+  }
+  repeated FileReference references = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  int32 total = 4;
+  bool has_more = 5;
+}
+
+message CatTextRequest {
+  string cid = 1;
+  int32 max_bytes = 2;
+}
+
+message AckPendingStagedRequest {
+  string tx_id = 1;
+  string cid = 2;
+  uint64 size = 3;
+}
+
+message AckPendingStagedResponse {
+  bool acknowledged = 1;
+}
+
+message GetPendingStagedFileRequest {
+  string tx_id = 1;
+}
+
+message FileChunk {
+  string tx_id = 1;
+  string cid = 2;
+  uint64 size = 3;
+  bytes content = 4;
+}
+
+message GetBlockBase64Request {
+  string cid = 1;
+}
+
+// Page limits remain bounded by each query; zero selects its documented default.
+message ExplorerPageRequest { uint32 limit = 1; uint64 offset = 2; }
+message ExplorerBlockRequest { string id = 1; }
+message ExplorerAddressRequest { string address = 1; }
+message ExplorerAddressPageRequest { string address = 1; uint32 limit = 2; uint64 offset = 3; }
+message ExplorerSearchRequest { string query = 1; }
+message ExplorerFileRequest { string cid = 1; }
+message ExplorerStatsResponse {
+  optional BlockHeader latest_block = 1;
+  uint64 total_blocks = 2;
+  uint64 total_transactions = 3;
+  uint64 pending_transactions = 4;
+  uint64 avg_block_time_ms = 5;
+}
+message ExplorerBlocksResponse {
+  repeated BlockHeader blocks = 1;
+  uint32 limit = 2;
+  uint64 offset = 3;
+  uint64 total = 4;
+}
+message ExplorerBlockReceiptsResponse {
+  uint64 block_index = 1;
+  string block_hash = 2;
+  string total_fees = 3;
+  repeated TransactionReceipt receipts = 4;
+}
+message ExplorerTransactionsResponse {
+  repeated TransactionContext transactions = 1;
+  uint32 limit = 2;
+  uint64 offset = 3;
+  uint64 total = 4;
+}
+message ExplorerAddressResponse {
+  string address = 1;
+  string address_kind = 2;
+  string balance = 3;
+  string reward_balance = 4;
+  uint64 tx_count = 5;
+}
+message ExplorerAddressTransactionsResponse {
+  string address = 1;
+  repeated AddressTransactionEntry transactions = 2;
+  uint32 limit = 3;
+  uint64 offset = 4;
+  uint64 total = 5;
+}
+message ExplorerAddressToken {
+  string token_id = 1;
+  string name = 2;
+  string symbol = 3;
+  string type = 4;
+  string balance = 5;
+  optional string uri = 6;
+}
+message ExplorerAddressTokensResponse {
+  string address = 1;
+  repeated ExplorerAddressToken token_balances = 2;
+  uint32 limit = 3;
+  uint64 offset = 4;
+  uint64 total = 5;
+}
+message ExplorerSearchResponse { string type = 1; string value = 2; }
+message ExplorerFile {
+  string cid = 1;
+  string tx_id = 2;
+  uint64 size = 3;
+  optional string mime_type = 4;
+  uint64 block_index = 5;
+  uint64 timestamp = 6;
+  optional string owner = 7;
+  optional string filename = 8;
+}
+message ExplorerFilesResponse {
+  repeated ExplorerFile files = 1;
+  uint32 limit = 2;
+  uint64 offset = 3;
+  uint64 total = 4;
+}
+message ExplorerFileResponse {
+  ExplorerFile file = 1;
+  FileReferenceLookupResponse provenance = 2;
+}
+message ExplorerChartsRequest {
+  enum Kind { BLOCK_TIMES = 0; TRANSACTION_VOLUME = 1; }
+  Kind kind = 1;
+  uint32 limit = 2;
+}
+message ExplorerChartPoint { uint64 block_index = 1; uint64 timestamp = 2; uint64 value = 3; }
+message ExplorerChartsResponse { repeated ExplorerChartPoint points = 1; }
+
+message ListScheduledCallsRequest {
+  string caller = 1;
+  string contract_address = 2;
+  uint32 limit = 3;
+  uint64 offset = 4;
+}
+message GetScheduledCallRequest { string schedule_id = 1; }
+message ScheduledCall {
+  string schedule_id = 1;
+  string caller = 2;
+  optional string creator_contract = 3;
+  string contract_address = 4;
+  string method = 5;
+  // Only the programmable contract value is JSON, never the fixed call record.
+  bytes data_json = 6;
+  uint64 execute_at_height = 7;
+  uint64 scheduled_at_height = 8;
+  uint64 gas_limit = 9;
+  optional string code_hash = 10;
+}
+message ListScheduledCallsResponse {
+  repeated ScheduledCall scheduled_calls = 1;
+  uint32 limit = 2;
+  uint64 offset = 3;
+  uint64 total = 4;
+  bool has_more = 5;
+}
+message ListCapabilitiesRequest {
+  string owner = 1;
+  string delegate = 2;
+  string contract_address = 3;
+  uint32 limit = 4;
+  uint64 offset = 5;
+}
+message GetCapabilityRequest { string capability_id = 1; }
+message DeviceCapability {
+  string capability_id = 1;
+  string owner = 2;
+  string delegate = 3;
+  string contract_address = 4;
+  repeated string methods = 5;
+  uint64 expires_at_height = 6;
+  uint64 max_gas_per_call = 7;
+  uint32 max_calls_per_block = 8;
+  bool delegate_as_actor = 9;
+  string fee_balance = 10;
+  uint64 storage_remaining_bytes = 11;
+  uint64 next_sequence = 12;
+  optional uint64 last_used_height = 13;
+  uint32 calls_at_last_height = 14;
+  bool revoked = 15;
+}
+message ListCapabilitiesResponse {
+  repeated DeviceCapability capabilities = 1;
+  uint32 limit = 2;
+  uint64 offset = 3;
+  uint64 total = 4;
+}
+message PersistenceStatusResponse {
+  string data_dir = 1;
+  string block_log_path = 2;
+  uint64 stored_blocks = 3;
+  uint64 canonical_log_bytes = 4;
+  uint64 stored_receipts = 5;
+  optional string receipt_cache_error = 6;
+  uint64 tip_height = 7;
+  string tip_hash = 8;
+  string state_hash = 9;
+  uint64 derived_block_receipts = 10;
+  repeated string persisted_files = 11;
+  uint64 checkpoint_count = 12;
+  optional string latest_checkpoint_path = 13;
+  optional uint64 latest_checkpoint_height = 14;
+  optional uint64 loaded_checkpoint_height = 15;
+  optional string checkpoint_error = 16;
+  uint64 file_objects = 17;
+  uint64 file_bytes = 18;
+  optional string storage_fault = 19;
+}
